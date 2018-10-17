@@ -1,0 +1,1 @@
+const swc = require('./common/init')();
