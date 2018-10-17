@@ -4,8 +4,7 @@ module.exports = async ()=>{
 	var swc = {
 		config : config
 	}
-
-	swc.mq = await require("./mq/init_mq")(swc);
+	swc = await require("./mq/init_mq")(swc);
 
 	return swc;
 }

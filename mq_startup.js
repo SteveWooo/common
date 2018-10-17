@@ -5,8 +5,8 @@ async function main(){
 	// }
 
 	// swc.mq.add_task(swc, task);
-	res = swc.mq.get_task(swc);
-	console.log(res);
+	// res = swc.mq.get_task(swc);
+	// console.log(res);
 }
 
 main()

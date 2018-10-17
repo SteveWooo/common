@@ -1,45 +1,30 @@
 const net = require("net");
 const fs = require("fs");
 
-function server(swc){
-	return new Promise(resolve=>{
-		const server = net.createServer((socket)=>{
-			socket.on("data", (msg)=>{
-				msg = msg.toString();
-				// console.log(msg);
-				try{
-					msg = JSON.parse(msg);
-					console.info(msg);
-				}catch(e){
-					console.info(e);
-				}
-			})
-
-			socket.on("error", (err)=>{
-				//ECONNRESET worker强制关闭
-				console.log(err.code);
-			})
-		}).listen(swc.config.mq_server, (info)=>{
-			console.info("server listen:" + swc.config.mq_server.port);
-			resolve(server);
-		});
-	})
-}
-
 function get_task_data(filename){
-	var data = fs.readFileSync(`./common/mq/${filename}`).toString();
+	var data = fs.readFileSync(`./common/mq/file/${filename}`).toString();
 	return JSON.parse(data);
 }
 
 function write_task_data(filename, data){
-	var data = fs.writeFileSync(`./common/mq/${filename}`, JSON.stringify(data));
+	var data = fs.writeFileSync(`./common/mq/file/${filename}`, JSON.stringify(data));
 }
 
 module.exports = async(swc)=>{
+	global.swc = {
+		mq : {
+			workers : []
+		}
+	}
 	var mq = {
 		get_task : (swc)=>{
 			let tasks = get_task_data("tasks");
 			let res = tasks.shift();
+
+			let processing = get_task_data("process");
+			processing.push(res);
+
+			write_task_data("process", processing);
 			write_task_data("tasks", tasks);
 			return res;
 		},
@@ -53,15 +38,14 @@ module.exports = async(swc)=>{
 			tasks.push(task);
 			write_task_data(tasks);
 		},
-		socket : undefined
+		finished_task : (swc, task)=>{
+			
+		},
+		master : await require("./master_handle").init(swc), //管理连接（心跳包管理），任务分发
+		server : undefined,
 	}
-	mq.socket = await server(swc)
+	swc.mq = mq;
+	mq.server = await require("./server_handle").init(swc); //管理网络
 
-	global.swc = {
-		mq : {
-
-		}
-	}
-
-	return mq;
+	return swc;
 }

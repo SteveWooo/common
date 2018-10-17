@@ -22,7 +22,7 @@ async function main(){
 	// client.write(JSON.stringify({data:"hello"}));
 	setInterval(()=>{
 		client.write(JSON.stringify({data:"hello"}));
-	}, 10)
+	}, 1000)
 	// client.destroy();
 }
 
