@@ -4,7 +4,7 @@ var from_client = {
 	},
 	heart_break : async(swc, data)=>{
 
-	}.
+	},
 	finished_task : async(swc, data)=>{
 
 	}
@@ -16,7 +16,17 @@ var to_client = {
 	}
 }
 
+function Worker(swc){
+	this.status = "normal"; //normal working,
+	this.id = "";
+	this.task_id = ""; //正在进行的任务ID
+	return this;
+}
+
+//唯一请求入口
 async function server_create(swc, socket){
+	console.log("connect");
+	console.log(socket);
 	socket.on("data", (msg)=>{
 		msg = msg.toString();
 		// console.log(msg);

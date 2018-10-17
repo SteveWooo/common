@@ -41,10 +41,12 @@ module.exports = async(swc)=>{
 		finished_task : (swc, task)=>{
 			
 		},
-		master : await require("./master_handle").init(swc), //管理连接（心跳包管理），任务分发
+		master : undefined,
 		server : undefined,
 	}
 	swc.mq = mq;
+
+	mq.master = await require("./master_handle").init(swc), //管理连接（心跳包管理），任务分发
 	mq.server = await require("./server_handle").init(swc); //管理网络
 
 	return swc;
