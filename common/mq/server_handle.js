@@ -7,7 +7,7 @@ function init(swc){
 			swc.mq.master.server_create(swc, socket);
 			socket.on("error", (err)=>{
 				//ECONNRESET worker强制关闭
-				console.log(err.code);
+				// console.log(err);
 			})
 		}).listen(swc.config.mq_server, (info)=>{
 			console.info("server listen:" + swc.config.mq_server.port);
