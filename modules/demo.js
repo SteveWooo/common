@@ -1,6 +1,6 @@
 module.exports = {
 	cb : async(swc, task)=>{
-		// console.log(task);
+		console.log(task.data.message);
 		return {
 			status : "success",
 			// error_message : "",
