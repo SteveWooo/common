@@ -9,18 +9,21 @@ async function connected(swc, socket){
 	// console.log("connect");
 	socket.on("data", (msg)=>{
 		msg = msg.toString();
+		let res = msg.match(/(\{.+?\})(?={|$)/g);
 		// console.log(msg);
-		try{
-			msg = JSON.parse(msg);
-			if(!(msg.type in swc.hoster.master.from_master)){
-				throw {
-					code : "4040",
-					message : "unknow type"
+		for(var i=0;i<res.length;i++){
+			try{
+				res[i] = JSON.parse(res[i]);
+				if(!(res[i].type in swc.hoster.master.from_master)){
+					throw {
+						code : "4040",
+						message : "unknow type"
+					}
 				}
+				swc.hoster.master.from_master[res[i].type](swc, res[i], socket);
+			}catch(e){
+				console.info(e);
 			}
-			swc.hoster.master.from_master[msg.type](swc, msg, socket);
-		}catch(e){
-			console.info(e);
 		}
 	})
 }
