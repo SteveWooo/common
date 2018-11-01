@@ -1,3 +1,4 @@
+const fs = require("fs");
 var from_master = {
 	add_task_response : async (swc, data, socket)=>{
 		console.log(data);
@@ -31,6 +32,48 @@ var to_master = {
 		global.swc.hoster.socket.write(JSON.stringify({
 			type : "add_task",
 			task : task,
+			time : +new Date(),
+			hoster_id : "",
+			sign : ""
+		}))
+	},
+	deploy : async (swc)=>{
+		var file = {};
+
+		function build_file(g){
+			var dir = fs.readdirSync(g.path);
+			for(var i=0;i<dir.length;i++){
+				let stat = fs.statSync(g.path + "/" + dir[i]);
+				if(stat.isFile()){
+					let f = {
+						type : "file",
+						filename : dir[i],
+						data : fs.readFileSync(g.path + "/" + dir[i]).toString()
+					}
+					g.content[dir[i]] = f;
+				}else if (stat.isDirectory()){
+					var d = build_file({
+						type : "dir",
+						dirname : dir[i],
+						path : g.path + "/" + dir[i],
+						content : {}
+					})
+					g.content[`${dir[i]}`] = d;
+				}
+			}
+			return g;
+		}
+		file = build_file({
+			type : "dir",
+			dirname : "modules",
+			path : "modules",
+			content : {}
+		});
+		let final_data = JSON.stringify(file);
+		global.swc.hoster.socket.write(JSON.stringify({
+			type : "deploy",
+			content : final_data,
+			version : "1.0.0",
 			time : +new Date(),
 			hoster_id : "",
 			sign : ""

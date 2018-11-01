@@ -18,6 +18,8 @@ async function main(){
 		}, 20)
 	}
 	send_task();
+
+	// swc.hoster.master.to_master.deploy(swc);
 }
 
 main();

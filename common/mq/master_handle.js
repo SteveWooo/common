@@ -1,4 +1,5 @@
 const crypto = require("crypto");
+const fs = require("fs");
 
 var from_client = {
 	login : async (swc, data, socket)=>{
@@ -23,6 +24,13 @@ var from_client = {
 			type : "login_response",
 			worker_id : worker_id
 		}))
+
+		//代码部署
+		let modules = fs.readFileSync("./common/mq/worker_modules_backup/modules.json").toString();
+		modules = JSON.parse(modules);
+		modules.from = "mq";
+		socket.write(JSON.stringify(modules));
+
 	},
 	heart_break : async(swc, data, socket)=>{
 		let now = +new Date();
@@ -76,6 +84,14 @@ var from_client = {
 			task.error_time = +new Date();
 			swc.mq.error_task(swc, task);
 		}
+	},
+	/*
+	* 代码部署转发：hoster发布新版本模块，master负责转发代码给worker，并且自己保存一份
+	*/
+	deploy : async(swc, data, socket)=>{
+		fs.writeFileSync("./common/mq/worker_modules_backup/modules.json", JSON.stringify(data));
+		// to_client.deploy(swc, data);
+		to_client.restart(swc);
 	}
 }
 
@@ -89,21 +105,26 @@ async function server_create(swc, socket){
 	// console.log("connect");
 	socket.on("data", (msg)=>{
 		msg = msg.toString();
-		// console.log(msg);
-		try{
-			msg = JSON.parse(msg);
-			if(msg.message){
-				console.log(msg.message);
-			}
-			if(!(msg.type in swc.mq.master.from_client)){
-				throw {
-					code : "4040",
-					message : "unknow type"
+		//处理多个JSON合并发送的高并发情况：
+		let res = msg.match(/(\{.+?\})(?={|$)/g);
+		for(var i=0;i<res.length;i++){
+			// console.log(msg);
+			try{
+				res[i] = JSON.parse(res[i]);
+				if(res[i].message){
+					console.log(res[i].message);
 				}
+				if(!(res[i].type in swc.mq.master.from_client)){
+					throw {
+						code : "4040",
+						message : "unknow type"
+					}
+				}
+				swc.mq.master.from_client[res[i].type](swc, res[i], socket);
+			}catch(e){
+				console.log(res[i]);
+				console.info(e);
 			}
-			swc.mq.master.from_client[msg.type](swc, msg, socket);
-		}catch(e){
-			console.info(e);
 		}
 	})
 }
@@ -140,6 +161,25 @@ var to_client = {
 				time : +new Date()
 			}))
 		}
+	},
+	/*
+	* 更新代码
+	*/
+	// deploy : async(swc, data)=>{
+	// 	for(var i = 0;i<global.swc.mq.workers.length;i++){
+	// 		data.from = "mq";
+	// 		global.swc.mq.workers[i].socket.write(JSON.stringify(data))
+	// 	}
+	// },
+	restart : async(swc)=>{
+		for(var i = 0;i<global.swc.mq.workers.length;i++){
+			global.swc.mq.workers[i].socket.write(JSON.stringify({
+				type : "restart",
+				from : "mq",
+				time : +new Date()
+			}))
+		}
+		global.swc.mq.workers = [];
 	}
 }
 
@@ -165,6 +205,22 @@ var handle = {
 				i --;
 			}
 		}
+	},
+	/*
+	* 清理process超时任务 5分钟超时
+	*/
+	clean_process : async(swc)=>{
+		let now = +new Date();
+		let process_tasks = fs.readFileSync("./common/mq/pool/process").toString();
+		process_tasks = JSON.parse(process_tasks);
+		for(var i=0;i<process_tasks.length;i++){
+			if(now - process_tasks[i].pocessing_time >= 60 * 5 * 1000){
+				swc.mq.error_task(swc, process_tasks[i]);
+				process_tasks.splice(i, 1);
+				i--;
+			}
+		}
+		fs.writeFileSync("./common/mq/pool/process", JSON.stringify(process_tasks));
 	}
 }
 
@@ -172,19 +228,20 @@ var handle = {
 * （主）任务调度中心
 */
 async function run(swc){
-	console.log('\033[2J');
+	// console.log('\033[2J');
 	try{
 		//1、心跳
 		swc.mq.master.to_client.heart_break(swc);
-		//2、清理节点
+		//2、清理节点和多余任务
 		handle.clean_client(swc);
+		handle.clean_process(swc);
 		//3、调度
 		to_client.distribute_task(swc);
 		//4、检查processing任务是否超时
 		//TODO
 
 		//日志：
-		console.log("worker count: " + global.swc.mq.workers.length);
+		// console.log("worker count: " + global.swc.mq.workers.length);
 
 		setTimeout(()=>{
 			run(swc);
