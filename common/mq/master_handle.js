@@ -75,7 +75,7 @@ var from_client = {
 		var task = swc.mq.get_process_task(swc, data.task_id);
 		if(data.status == "success"){
 			//finished;
-			console.log("done");
+			// console.log("done");
 		} 
 
 		if(data.status == "faile"){
