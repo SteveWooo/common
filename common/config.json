@@ -3,10 +3,14 @@
 		"span" : 500
 	},
 	"mq_server" : {
-		"host" : "127.0.0.1",
+		"host" : "www.cybergear-cn.com",
 		"port" : "6654"
 	},
 	"worker" : {
+		"mq_server_host" : "www.cybergear-cn.com",
+		"mq_server_port" : "6654"
+	},
+	"hoster" : {
 		"mq_server_host" : "www.cybergear-cn.com",
 		"mq_server_port" : "6654"
 	}

@@ -2,7 +2,7 @@ const net = require("net");
 function connect(swc){
 	return new Promise(resolve=>{
 		let client = new net.Socket();
-		client.connect(swc.config.mq_server.port, swc.config.mq_server.host, async ()=>{
+		client.connect(swc.config.hoster.mq_server_port, swc.config.hoster.mq_server_host, async ()=>{
 			swc.hoster.master.connected(swc, client);
 			client.on("error", (err)=>{
 				//ECONNRESET master强制关闭
