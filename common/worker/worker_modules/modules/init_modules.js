@@ -1,4 +1,3 @@
 module.exports = {
-	demo : require("./demo"),
-	test : require("./test")
+	demo : require("./demo")
 }
