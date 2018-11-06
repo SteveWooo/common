@@ -1,5 +1,5 @@
 {
-	"mode" : "pro",
+	"mode" : "local",
 	"mq" : {
 		"span" : 500
 	},

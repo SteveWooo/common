@@ -8,7 +8,7 @@ module.exports = async (type)=>{
 	if(swc.config.mode == "local"){
 		swc.config.mq_server.host = "127.0.0.1";
 		swc.config.worker.mq_server_host = "127.0.0.1";
-		swc.config.hsoter.mq_server_host = "127.0.0.1";
+		swc.config.hoster.mq_server_host = "127.0.0.1";
 	}
 
 	if(type == "master"){

@@ -1,4 +1,4 @@
-async function deploy(swc){
+async function deploy(swc){ //逻辑脚本部署
 	swc.hoster.master.to_master.deploy(swc);
 }
 
