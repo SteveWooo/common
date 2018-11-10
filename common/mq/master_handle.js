@@ -73,6 +73,12 @@ var from_client = {
 			return ;
 		}
 		var task = swc.mq.get_process_task(swc, data.task_id);
+
+		//修改worker状态
+		for(var i=0;i<global.mq.workers.length;i++){
+			
+		}
+
 		if(data.status == "success"){
 			//finished;
 			// console.log("done");
@@ -107,6 +113,9 @@ async function server_create(swc, socket){
 		msg = msg.toString();
 		//处理多个JSON合并发送的高并发情况：
 		let res = msg.match(/(\{.+?\})(?={|$)/g);
+		if(!res){
+			return ;
+		}
 		for(var i=0;i<res.length;i++){
 			// console.log(msg);
 			try{
@@ -139,11 +148,12 @@ var to_client = {
 			if(global.swc.mq.workers[i].status == "normal" && 
 				global.swc.mq.workers[i].net == "connect"){
 				//2、拿任务
-				let task = swc.mq.get_task(swc);
+				let task = swc.mq.get_task(swc, 1, global.swc.mq.workers[i].worker_id);
 				if(!task){ //没任务 粮仓嗷嗷待哺
 					break;
 				}
 				//3、投食 [0 .0]~ [foods]
+				global.swc.mq.workers[i].status = "do_task";
 				global.swc.mq.workers[i].socket.write(JSON.stringify({
 					type : "do_task",
 					task : task
@@ -241,7 +251,9 @@ async function run(swc){
 		//TODO
 
 		//日志：
-		// console.log("worker count: " + global.swc.mq.workers.length);
+		console.log("tasks  count: " + global.swc.mq.cache.tasks_count);
+		console.log("worker count: " + global.swc.mq.workers.length);
+		console.log(global.swc.mq.workers);
 
 		setTimeout(()=>{
 			run(swc);

@@ -16,11 +16,14 @@ function write_task_data(filename, data){
 module.exports = async(swc)=>{
 	global.swc = {
 		mq : {
+			cache : {
+				tasks_count : 0
+			},
 			workers : []
 		}
 	}
 	var mq = {
-		get_task : (swc, count=1)=>{
+		get_task : (swc, count=1, worker_id)=>{
 			let tasks = get_task_data("tasks");
 			let res = tasks.shift();
 			if(res == undefined){
@@ -28,6 +31,8 @@ module.exports = async(swc)=>{
 			}
 			//被拿出来的时间
 			res.pocessing_time = +new Date();
+			//worker_id
+			res.worker_id = worker_id;
 
 			let processing = get_task_data("process");
 			processing.push(res);
@@ -39,6 +44,8 @@ module.exports = async(swc)=>{
 		add_task : (swc, task)=>{
 			let tasks = get_task_data("tasks");
 			tasks.push(task);
+			console.log("event:push " + tasks.length);
+			global.swc.mq.tasks_count = tasks.length;
 			write_task_data("tasks", tasks);
 		},
 		error_task : (swc, task)=>{
