@@ -75,8 +75,10 @@ var from_client = {
 		var task = swc.mq.get_process_task(swc, data.task_id);
 
 		//修改worker状态
-		for(var i=0;i<global.mq.workers.length;i++){
-			
+		for(var i=0;i<global.swc.mq.workers.length;i++){
+			if(task.worker_id == global.swc.mq.workers[i].worker_id){
+				global.swc.mq.workers[i].status = "normal";
+			}
 		}
 
 		if(data.status == "success"){
@@ -152,6 +154,7 @@ var to_client = {
 				if(!task){ //没任务 粮仓嗷嗷待哺
 					break;
 				}
+				// console.log("dis");
 				//3、投食 [0 .0]~ [foods]
 				global.swc.mq.workers[i].status = "do_task";
 				global.swc.mq.workers[i].socket.write(JSON.stringify({
@@ -210,7 +213,7 @@ var handle = {
 			* 任务列表为空+离线节点清理掉
 			*/
 			if(global.swc.mq.workers[i].net == "disconnect" &&
-				global.swc.mq.workers[i].status == "normal"){
+				now - global.swc.mq.workers[i].update >= 20000){
 				global.swc.mq.workers.splice(i, 1);
 				i --;
 			}
@@ -238,7 +241,7 @@ var handle = {
 * （主）任务调度中心
 */
 async function run(swc){
-	// console.log('\033[2J');
+	console.log('\033[2J');
 	try{
 		//1、心跳
 		swc.mq.master.to_client.heart_break(swc);
@@ -253,7 +256,10 @@ async function run(swc){
 		//日志：
 		console.log("tasks  count: " + global.swc.mq.cache.tasks_count);
 		console.log("worker count: " + global.swc.mq.workers.length);
-		console.log(global.swc.mq.workers);
+		// console.log(global.swc.mq.workers);
+		for(var i=0;i<global.swc.mq.workers.length;i++){
+			console.log(i + " status:" + global.swc.mq.workers[i].status);
+		}
 
 		setTimeout(()=>{
 			run(swc);

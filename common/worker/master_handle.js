@@ -66,21 +66,27 @@ var from_master = {
 async function connected(swc, socket){
 	socket.on("data", (msg)=>{
 		msg = msg.toString();
-		try{
-			msg = JSON.parse(msg);
-			if(!(msg.type in from_master)){
-				throw {
-					code : "4040",
-					message : "unknow type"
+		let res = msg.match(/(\{.+?\})(?={|$)/g);
+		if(!res || res.length == 0){
+			return ;
+		}
+		for(var i=0;i<res.length;i++){
+			try{
+				res[i] = JSON.parse(res[i]);
+				if(!(res[i].type in from_master)){
+					throw {
+						code : "4040",
+						message : "unknow type"
+					}
 				}
+				from_master[res[i].type](swc, res[i], socket);
+			}catch(e){
+				// console.log("===============================")
+				console.log(res[i])
+				// console.log("===============================")
+				console.log(e);
+				process.exit();
 			}
-			from_master[msg.type](swc, msg, socket);
-		}catch(e){
-			// console.log("===============================")
-			console.log(msg)
-			// console.log("===============================")
-			console.log(e);
-			process.exit();
 		}
 	})
 }

@@ -15,6 +15,7 @@ function get_info(swc, page){
 	return new Promise(resolve=>{
 		var option = {
 			url : "http://app.kyj344.com:8880/api/public/?service=Video.getVideoList&uid=-9999&type=0&p=" + page,
+			proxy : "http://:@127.0.0.1:1080"
 		}
 
 		request(option, function(err, res, body){
@@ -63,6 +64,7 @@ async function callback(swc, task){
 	}
 
 	let data = info.data.info;
+	console.log("length : " + data.length);
 	for(var i=0;i<data.length;i++){
 		let d = data[i];
 		// console.log(i)
@@ -80,9 +82,9 @@ async function callback(swc, task){
 
 		var sql = `INSERT INTO \`kuaiyaojing\` (\`image_url\`,\`video_id\`,\`uid\`,\`video_url\`,\`title\`) VALUES (${video["image_url"]},${video["video_id"]},${video["uid"]},${video["video_url"]},${video["title"]})`;
 		let res = await write_data(swc, sql, db_handle);
-		console.log(res);
+		// console.log(res);
 	}
-	await sleep(2000);
+	// await sleep(2000);
 	console.log(new Date());
 	console.log("==")
 	return {

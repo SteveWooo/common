@@ -34,9 +34,9 @@ function add_task(swc){
 		}
 	})
 
-	// setTimeout(()=>{
-	// 	add_task(swc);
-	// }, 100);
+	setTimeout(()=>{
+		add_task(swc);
+	}, 400);
 }
 
 async function main(){

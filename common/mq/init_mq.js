@@ -29,6 +29,7 @@ module.exports = async(swc)=>{
 			if(res == undefined){
 				return res;
 			}
+			global.swc.mq.cache.tasks_count = tasks.length;
 			//被拿出来的时间
 			res.pocessing_time = +new Date();
 			//worker_id
@@ -44,8 +45,8 @@ module.exports = async(swc)=>{
 		add_task : (swc, task)=>{
 			let tasks = get_task_data("tasks");
 			tasks.push(task);
-			console.log("event:push " + tasks.length);
-			global.swc.mq.tasks_count = tasks.length;
+			// console.log("event:push " + tasks.length);
+			global.swc.mq.cache.tasks_count = tasks.length;
 			write_task_data("tasks", tasks);
 		},
 		error_task : (swc, task)=>{
