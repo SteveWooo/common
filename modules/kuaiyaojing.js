@@ -42,6 +42,19 @@ function write_data(swc, sql, db_handle){
 		})
 	})
 }
+function get_data(swc, sql, db_handle){
+	return new Promise((resolve, reject)=>{
+		db_handle.query(sql, (err, row)=>{
+			if(err){
+				console.log(err);
+				reject(err);
+				return ;
+			}
+			resolve(row);
+			return ;
+		})
+	})
+}
 
 function sleep(time){
 	return new Promise(resolve=>{
@@ -97,8 +110,10 @@ exports.callback = callback;
 
 function download_file(swc, video){
 	return new Promise(resolve=>{
-		var stream = fs.createWriteStream("./kuaiyaojing/" + video["title"]);
+		var fold = parseInt(video.video_id) % 10;
+		var stream = fs.createWriteStream("J:\\media\\porn\\kuaiyaojing\\" + fold + "\\" + video["title"] + ".mp4");
 		request(video.video_url).pipe(stream).on('close', ()=>{
+			console.log("done:" + video["title"]);
 			resolve("done");
 		}).on("error", ()=>{
 			resolve("faile");
@@ -108,24 +123,43 @@ function download_file(swc, video){
 
 const fs = require("fs");
 async function download(swc, task){
-	let data = task.data;
-	data["title"] = data["title"] + data["video_id"];
-	let res = await download_file(swc);
-	if(res == "done"){
-		await sleep(2000);
-		return {
-			task_id : task_id,
-			status : "success"
-		}
-	} else {
-		fs.appendFileSync("./kuaiyaojing/error_vid", data["video_id"]);
-		return {
-			task_id : task_id,
-			status : "faile",
-			error_message : {
-				video : data
+	try{
+		let data = task.data;
+		var db_handle = mysql.createConnection(config.mysql);
+		var sql = "select * from `kuaiyaojing` where downloaded=0 and video_id=" + mysql.escape(data["video_id"]);
+		var videos = await get_data(swc, sql, db_handle);
+		if(videos.length == 0){
+			console.log("already download " + new Date());
+			return {
+				task_id : task.task_id,
+				status : "success"
 			}
 		}
+		let video = videos[0];
+		// if(!video){
+		// 	return {
+		// 		task_id : task.task_id,
+		// 		status : "success"
+		// 	}
+		// }
+		video["title"] = video["title"] + video["video_id"];
+		let res = await download_file(swc, video);
+		if(res == "done"){ //修改下载状态
+			sql = "update kuaiyaojing set downloaded=1 where video_id=" + mysql.escape(video["video_id"]);
+			await write_data(swc, sql, db_handle);
+		}
+		db_handle.end();
+		return {
+			task_id : task.task_id,
+			status : "success"
+		}
+	}catch(e){
+		console.log(e);
+		return {
+			task_id : task.task_id,
+			status : "success"
+		}
 	}
-	
 }
+
+exports.download = download;
