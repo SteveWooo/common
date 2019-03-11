@@ -16,7 +16,7 @@ function send_task(num = 0, swc, options){
 		callback : "run",
 		data : {
 			src : options.files[num],
-			filename : `../result/${options.dir}/${name}`
+			filename : `${options.dir}/${name}`
 		}
 	})
 	setTimeout(()=>{
@@ -27,7 +27,8 @@ function send_task(num = 0, swc, options){
 async function main(){
 	const swc = await require('./common/init')("hoster");
 	deploy(swc);
-	var files
+	// return ;
+	// var files
 	// files = fs.readFileSync('../result/datasrc').toString().split('\n');
 	// send_task(0, swc, {
 	// 	files : files,

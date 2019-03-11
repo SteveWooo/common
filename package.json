@@ -18,6 +18,7 @@
   "homepage": "https://github.com/SteveWooo/common#readme",
   "dependencies": {
     "express": "^4.16.4",
+    "reqeust": "^2.81.1",
     "request": "^2.88.0"
   }
 }
