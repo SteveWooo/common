@@ -18,7 +18,11 @@
   "homepage": "https://github.com/SteveWooo/common#readme",
   "dependencies": {
     "express": "^4.16.4",
+<<<<<<< HEAD
     "mysql": "^2.16.0",
+=======
+    "reqeust": "^2.81.1",
+>>>>>>> master
     "request": "^2.88.0"
   }
 }

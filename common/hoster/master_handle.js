@@ -1,7 +1,7 @@
 const fs = require("fs");
 var from_master = {
 	add_task_response : async (swc, data, socket)=>{
-		console.log(data);
+		// console.log(data);
 	}
 }
 
@@ -66,12 +66,16 @@ var to_master = {
 			}
 			return g;
 		}
-		file = build_file({
-			type : "dir",
-			dirname : "modules",
-			path : "modules",
-			content : {}
-		});
+		try{
+			file = build_file({
+				type : "dir",
+				dirname : "modules",
+				path : "modules",
+				content : {}
+			});
+		}catch(e){
+			console.log(e)
+		}
 		let final_data = JSON.stringify(file);
 		global.swc.hoster.socket.write(JSON.stringify({
 			type : "deploy",

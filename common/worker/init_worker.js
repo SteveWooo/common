@@ -14,13 +14,12 @@ module.exports = async(swc)=>{
 		}
 	}
 
-	var worker = {
-		modules : require('../../modules/init_modules'),
-		master : undefined,
-	}
-	swc.worker = worker;
-
 	try{
+		var worker = {
+			modules : require('../../modules/init_modules'),
+			master : undefined,
+		}
+		swc.worker = worker;
 		swc.worker.master = await require('./master_handle').init(swc);
 		global.swc.worker.socket = await require('./server_handle')(swc);
 	}catch(e){
